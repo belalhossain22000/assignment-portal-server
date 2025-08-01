@@ -106,7 +106,7 @@ const forgotPassword = async (payload: { email: string }) => {
     userData.email,
     `
      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <p>Dear ${userData.firstName},</p>
+          <p>Dear ${userData.name},</p>
           
           <p>We received a request to reset your password. Click the button below to reset your password:</p>
           
