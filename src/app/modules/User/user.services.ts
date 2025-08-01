@@ -42,103 +42,63 @@ const getUsersFromDb = async (
   params: IUserFilterRequest,
   options: IPaginationOptions
 ) => {
-  try {
-    const { page, limit, skip } = paginationHelper.calculatePagination(options);
-    const { searchTerm, ...filterData } = params;
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
 
-    const andConditions: Prisma.UserWhereInput[] = [];
+  const andConditions: Prisma.UserWhereInput[] = [];
 
-    // Search functionality
-    if (searchTerm?.trim()) {
-      andConditions.push({
-        OR: userSearchAbleFields.map((field) => ({
-          [field]: {
-            contains: searchTerm.trim(),
-            mode: "insensitive",
-          },
-        })),
-      });
-    }
-
-    // Filter functionality - improved to handle different data types
-    if (Object.keys(filterData).length > 0) {
-      const filterConditions = Object.entries(filterData)
-        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
-        .map(([key, value]) => {
-          // Handle boolean fields
-          if (typeof value === 'boolean') {
-            return { [key]: value };
-          }
-          
-          // Handle string fields with exact match
-          if (typeof value === 'string') {
-            return { [key]: { equals: value } };
-          }
-          
-          // Handle other types
-          return { [key]: { equals: value } };
-        });
-
-      if (filterConditions.length > 0) {
-        andConditions.push({ AND: filterConditions });
-      }
-    }
-
-    const whereConditions: Prisma.UserWhereInput = 
-      andConditions.length > 0 ? { AND: andConditions } : {};
-
-    // Execute queries in parallel for better performance
-    const [result, total] = await Promise.all([
-      prisma.user.findMany({
-        where: whereConditions,
-        include: {
-          // Include all related tables from your schema
-          instructorAssignments: {
-            include: {
-              submissions: true,
-              notifications: true,
-            },
-          },
-          submissions: {
-            include: {
-              assignment: true,
-              notifications: true,
-            },
-          },
-          notifications: {
-            include: {
-              assignment: true,
-              submission: true,
-            },
-          },
+  if (params.searchTerm) {
+    andConditions.push({
+      OR: userSearchAbleFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
         },
-        orderBy:
-          options.sortBy && options.sortOrder
-            ? { [options.sortBy]: options.sortOrder }
-            : { createdAt: "desc" },
-      }),
-      prisma.user.count({
-        where: whereConditions,
-      }),
-    ]);
-
-    // Calculate total pages
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages,
-      },
-      data: result,
-    };
-
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw new ApiError(500, "Failed to fetch users");
+      })),
+    });
   }
+
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+  const whereConditions: Prisma.UserWhereInput = { AND: andConditions };
+
+  const result = await prisma.user.findMany({
+    where: whereConditions,
+    skip,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc",
+          },
+          include:{
+            
+          }
+  });
+  const total = await prisma.user.count({
+    where: whereConditions,
+  });
+
+  if (!result || result.length === 0) {
+    throw new ApiError(404, "No active users found");
+  }
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
 };
 
 // get user profile
