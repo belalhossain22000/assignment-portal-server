@@ -4,7 +4,7 @@ import { IUser, IUserFilterRequest } from "./user.interface";
 import * as bcrypt from "bcrypt";
 import { IPaginationOptions } from "../../../interfaces/paginations";
 import { paginationHelper } from "../../../helpars/paginationHelper";
-import { Prisma, User, UserRole, UserStatus } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { userSearchAbleFields } from "./user.costant";
 import config from "../../../config";
 import httpStatus from "http-status";
@@ -32,15 +32,6 @@ const createUserIntoDb = async (payload: User) => {
 
   const result = await prisma.user.create({
     data: { ...payload, password: hashedPassword },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   return result;
@@ -89,16 +80,6 @@ const getUsersFromDb = async (
         : {
             createdAt: "desc",
           },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profileImage: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
   const total = await prisma.user.count({
     where: whereConditons,
@@ -123,18 +104,22 @@ const getMyProfile = async (userId: string) => {
     where: {
       id: userId,
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profileImage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   return userProfile;
+};
+
+//get user by id
+const getUserById = async (id: string) => {
+  const result = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  if (!result) {
+    throw new ApiError(404, "User not found");
+  }
+  return result;
 };
 
 // update profile by user won profile uisng token or email and id
@@ -156,15 +141,6 @@ const updateProfile = async (user: IUser, payload: User) => {
       email: userInfo.email,
     },
     data: payload,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profileImage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   if (!result)
@@ -191,16 +167,6 @@ const updateUserIntoDb = async (payload: IUser, id: string) => {
       id: userInfo.id,
     },
     data: payload,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profileImage: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   if (!result)
@@ -215,6 +181,7 @@ const updateUserIntoDb = async (payload: IUser, id: string) => {
 export const userService = {
   createUserIntoDb,
   getUsersFromDb,
+  getUserById,
   updateProfile,
   updateUserIntoDb,
   getMyProfile,

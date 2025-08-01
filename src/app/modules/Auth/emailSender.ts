@@ -16,13 +16,13 @@ const emailSender = async (subject: string, email: string, html: string) => {
   });
 
   const info = await transporter.sendMail({
-    from: '"bestone" <belalhossain22000@gmail.com>',
+    from: '"Assignment Portal" <fbelalhossain2072@gmail.com>',
     to: email,
     subject: `${subject}`,
     html,
   });
 
-  // console.log("Message sent: %s", info.messageId);
+  console.log("Message sent: %s", info.messageId);
 };
 
 export default emailSender;
