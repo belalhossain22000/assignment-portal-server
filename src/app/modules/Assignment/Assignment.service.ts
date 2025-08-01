@@ -249,10 +249,10 @@ const updateAssignment = async (id: string, data: any) => {
       data: updated.result,
     };
   } catch (error: any) {
-    console.error("Assignment update failed:", error.message);
+    console.error("Assignment update failed:", error);
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      "Assignment update failed"
+      error.message
     );
   }
 };
