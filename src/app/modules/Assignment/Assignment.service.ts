@@ -250,10 +250,7 @@ const updateAssignment = async (id: string, data: any) => {
     };
   } catch (error: any) {
     console.error("Assignment update failed:", error);
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      error.message
-    );
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
@@ -268,7 +265,10 @@ const deleteAssignment = async (id: string, instructorId: string) => {
 
   // ✅ Check if the requesting user is the owner
   if (existingAssignment.instructorId !== instructorId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "You are not allowed to delete this assignment");
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You are not allowed to delete this assignment"
+    );
   }
 
   // Proceed to delete the assignment and related data
@@ -277,10 +277,205 @@ const deleteAssignment = async (id: string, instructorId: string) => {
     await tx.assignment.delete({ where: { id } });
   });
 
-  console.log(`Assignment "${existingAssignment.title}" deleted by instructor ${instructorId}`);
+  console.log(
+    `Assignment "${existingAssignment.title}" deleted by instructor ${instructorId}`
+  );
   return { success: true };
 };
 
+//!
+
+const getAssignmentStatsByInstructorId = async (instructorId: string) => {
+  const assignments = await prisma.assignment.findMany({
+    where: { instructorId },
+    include: {
+      submissions: true,
+    },
+  });
+
+  const totalAssignments = assignments.length;
+  const totalSubmissions = assignments.reduce(
+    (acc, assignment) => acc + assignment.submissions.length,
+    0
+  );
+
+  const pendingReview = assignments.reduce(
+    (acc, assignment) =>
+      acc +
+      assignment.submissions.filter((sub) => sub.status === "PENDING").length,
+    0
+  );
+
+  const acceptedSubmissions = assignments.reduce(
+    (acc, assignment) =>
+      acc +
+      assignment.submissions.filter((sub) => sub.status === "ACCEPTED").length,
+    0
+  );
+
+  const completionRate =
+    totalSubmissions > 0
+      ? Math.round((acceptedSubmissions / totalSubmissions) * 100)
+      : 0;
+
+  return {
+    totalAssignments,
+    totalSubmissions,
+    pendingReview,
+    completionRate,
+    acceptedSubmissions,
+    rejectedSubmissions: totalSubmissions - acceptedSubmissions - pendingReview,
+  };
+};
+
+const getRecentAssignmentsByInstructor = async (
+  instructorId: string,
+  limit = 5
+) => {
+  return await prisma.assignment.findMany({
+    where: { instructorId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: {
+      submissions: {
+        select: {
+          id: true,
+          status: true,
+          submittedAt: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+// 4. Get all assignments by instructor
+const getAllAssignmentsByInstructor = async (instructorId: string) => {
+  const [assignments, totalCount] = await Promise.all([
+    prisma.assignment.findMany({
+      where: { instructorId },
+      orderBy: { createdAt: "desc" },
+
+      include: {
+        submissions: {
+          select: {
+            id: true,
+            status: true,
+            submittedAt: true,
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.assignment.count({
+      where: { instructorId },
+    }),
+  ]);
+
+  return {
+    totalCount,
+    assignments,
+  };
+};
+
+const getStudentAssignmentStats = async (studentId: string) => {
+  const [allAssignments, mySubmissions] = await Promise.all([
+    prisma.assignment.count({
+      where: { isActive: true },
+    }),
+    prisma.submission.findMany({
+      where: { studentId },
+      select: {
+        status: true,
+        assignmentId: true,
+      },
+    }),
+  ]);
+
+  const submissionsByAssignment = mySubmissions.reduce((acc: any, sub: any) => {
+    acc[sub.assignmentId] = sub;
+    return acc;
+  }, {});
+
+  const mySubmissionCount = mySubmissions.length;
+  const pendingCount = mySubmissions.filter(
+    (sub: any) => sub.status === "PENDING"
+  ).length;
+  const acceptedCount = mySubmissions.filter(
+    (sub: any) => sub.status === "ACCEPTED"
+  ).length;
+  const rejectedCount = mySubmissions.filter(
+    (sub: any) => sub.status === "REJECTED"
+  ).length;
+
+  return {
+    availableAssignments: allAssignments,
+    mySubmissions: mySubmissionCount,
+    pending: pendingCount,
+    accepted: acceptedCount,
+    rejected: rejectedCount,
+    notSubmitted: allAssignments - mySubmissionCount,
+  };
+};
+
+
+const getAvailableAssignmentsForStudent = async (studentId:any) => {
+
+  
+  // Get assignments that student hasn't submitted yet
+  const submittedAssignmentIds = await prisma.submission.findMany({
+    where: { studentId },
+    select: { assignmentId: true }
+  }).then(submissions => submissions.map(sub => sub.assignmentId));
+
+  const [assignments, totalCount] = await Promise.all([
+    prisma.assignment.findMany({
+      where: {
+        isActive: true,
+        id: {
+          notIn: submittedAssignmentIds
+        }
+      },
+      orderBy: { deadline: 'asc' },
+     
+      include: {
+        instructor: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    }),
+    prisma.assignment.count({
+      where: {
+        isActive: true,
+        id: {
+          notIn: submittedAssignmentIds
+        }
+      }
+    })
+  ]);
+
+  return {
+    totalCount,
+    assignments,
+    
+  };
+};
 
 export const assignmentService = {
   createAssignment,

@@ -40,10 +40,8 @@ const loginUser = async (payload: { email: string; password: string }) => {
     config.jwt.expires_in as string
   );
 
-  return { token: accessToken };
+  return { token: accessToken, user: userData };
 };
-
-
 
 // change password
 
@@ -99,7 +97,6 @@ const forgotPassword = async (payload: { email: string }) => {
 
   const resetPassLink =
     config.reset_pass_link + `?userId=${userData.id}&token=${resetPassToken}`;
- 
 
   await emailSender(
     "Reset Your Password",
