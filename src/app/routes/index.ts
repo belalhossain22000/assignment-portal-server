@@ -4,6 +4,7 @@ import { AuthRoutes } from "../modules/Auth/auth.routes";
 import { ImageRoutes } from "../modules/Image/Image.routes";
 import { assignmentRoutes } from "../modules/Assignment/Assignment.route";
 import { submissionRoutes } from "../modules/Submission/Submission.route";
+import { notificationRoutes } from "../modules/Notification/Notification.routes";
 
 
 const router = express.Router();
@@ -28,6 +29,10 @@ const moduleRoutes = [
   {
     path: "/submissions",
     route: submissionRoutes,
+  },
+  {
+    path: "/notifications",
+    route: notificationRoutes,
   },
 
 ];

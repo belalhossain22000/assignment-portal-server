@@ -84,6 +84,79 @@ const updateSubmissionStatus = catchAsync(
   }
 );
 
+//getSubmissionChartDataForInstructor
+const getSubmissionChartDataForInstructor = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await submissionService.getSubmissionChartDataForInstructor(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Submission chart data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+//getStudentSubmissionChartData
+const getStudentSubmissionChartData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await submissionService.getStudentSubmissionChartData(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Submission chart data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+//getStudentRecentSubmissions
+const getStudentRecentSubmissions = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await submissionService.getStudentRecentSubmissions(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Submission chart data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+//getMySubmissionStats
+const getMySubmissionStats = catchAsync(async (req: Request, res: Response) => {
+  const result = await submissionService.getMySubmissionStats(req.user.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Submission chart data retrieved successfully",
+    data: result,
+  });
+});
+
+//giveSubmissionFeedback
+const giveSubmissionFeedback = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await submissionService.giveSubmissionFeedback(
+      req.user.id,
+      req.params.id,
+      req.body
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Submission chart data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const submissionController = {
   createSubmission,
   getAllSubmissions,
@@ -91,4 +164,9 @@ export const submissionController = {
   updateSubmission,
   deleteSubmission,
   updateSubmissionStatus,
+  getSubmissionChartDataForInstructor,
+  getStudentSubmissionChartData,
+  getStudentRecentSubmissions,
+  getMySubmissionStats,
+  giveSubmissionFeedback,
 };

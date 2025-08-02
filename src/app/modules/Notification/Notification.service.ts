@@ -13,17 +13,17 @@ const getNotificationsByUserId = async (
     limit = 50,
     isRead = null,
     type = null,
-    sortBy = 'createdAt',
-    sortOrder = 'desc'
+    sortBy = "createdAt",
+    sortOrder = "desc",
   } = options;
 
   // Build where clause
   const whereClause: any = { userId };
-  
+
   if (isRead !== null) {
     whereClause.isRead = isRead;
   }
-  
+
   if (type) {
     whereClause.type = type;
   }
@@ -38,33 +38,37 @@ const getNotificationsByUserId = async (
           select: {
             id: true,
             title: true,
-            deadline: true
-          }
+            deadline: true,
+          },
         },
         submission: {
           select: {
             id: true,
             status: true,
-            submittedAt: true
-          }
-        }
-      }
+            submittedAt: true,
+          },
+        },
+      },
     }),
     prisma.notification.count({
-      where: whereClause
+      where: whereClause,
     }),
     prisma.notification.count({
       where: {
         userId,
-        isRead: false
-      }
-    })
+        isRead: false,
+      },
+    }),
   ]);
 
   return {
     notifications,
     totalCount,
     unreadCount,
-    readCount: totalCount - unreadCount
+    readCount: totalCount - unreadCount,
   };
+};
+
+export const NotificationService = {
+  getNotificationsByUserId,
 };

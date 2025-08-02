@@ -476,39 +476,38 @@ const getSubmissionChartDataForInstructor = async (instructorId: string) => {
   ];
 };
 
-
-const getStudentSubmissionChartData = async ( studentId:any) => {
+const getStudentSubmissionChartData = async (studentId: any) => {
   const submissions = await prisma.submission.findMany({
     where: { studentId },
     select: {
-      status: true
-    }
+      status: true,
+    },
   });
 
-  const statusCounts = submissions.reduce((acc:any, submission) => {
+  const statusCounts = submissions.reduce((acc: any, submission) => {
     acc[submission.status] = (acc[submission.status] || 0) + 1;
     return acc;
   }, {});
 
   const totalAssignments = await prisma.assignment.count({
-    where: { isActive: true }
+    where: { isActive: true },
   });
-  
+
   const totalSubmissions = submissions.length;
   const notSubmitted = totalAssignments - totalSubmissions;
 
   return [
-    { name: 'Pending', value: statusCounts.PENDING || 0, color: '#fbbf24' },
-    { name: 'Accepted', value: statusCounts.ACCEPTED || 0, color: '#10b981' },
-    { name: 'Rejected', value: statusCounts.REJECTED || 0, color: '#ef4444' },
-    { name: 'Not Submitted', value: notSubmitted, color: '#6b7280' }
+    { name: "Pending", value: statusCounts.PENDING || 0, color: "#fbbf24" },
+    { name: "Accepted", value: statusCounts.ACCEPTED || 0, color: "#10b981" },
+    { name: "Rejected", value: statusCounts.REJECTED || 0, color: "#ef4444" },
+    { name: "Not Submitted", value: notSubmitted, color: "#6b7280" },
   ];
 };
 
-const getStudentRecentSubmissions = async ( studentId:any, limit = 5) => {
+const getStudentRecentSubmissions = async (studentId: any, limit = 5) => {
   return await prisma.submission.findMany({
     where: { studentId },
-    orderBy: { submittedAt: 'desc' },
+    orderBy: { submittedAt: "desc" },
     take: limit,
     include: {
       assignment: {
@@ -521,17 +520,16 @@ const getStudentRecentSubmissions = async ( studentId:any, limit = 5) => {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
-      }
-    }
+              email: true,
+            },
+          },
+        },
+      },
+    },
   });
 };
 
-
-const getMySubmissionStats = async (studentId:any) => {
+const getMySubmissionStats = async (studentId: any) => {
   const submissions = await prisma.submission.findMany({
     where: { studentId },
     select: {
@@ -539,20 +537,26 @@ const getMySubmissionStats = async (studentId:any) => {
       submittedAt: true,
       assignment: {
         select: {
-          deadline: true
-        }
-      }
-    }
+          deadline: true,
+        },
+      },
+    },
   });
 
   const totalSubmissions = submissions.length;
-  const pendingReview = submissions.filter(sub => sub.status === 'PENDING').length;
-  const accepted = submissions.filter(sub => sub.status === 'ACCEPTED').length;
-  const rejected = submissions.filter(sub => sub.status === 'REJECTED').length;
-  
+  const pendingReview = submissions.filter(
+    (sub) => sub.status === "PENDING"
+  ).length;
+  const accepted = submissions.filter(
+    (sub) => sub.status === "ACCEPTED"
+  ).length;
+  const rejected = submissions.filter(
+    (sub) => sub.status === "REJECTED"
+  ).length;
+
   // Calculate late submissions
-  const lateSubmissions = submissions.filter(sub => 
-    new Date(sub.submittedAt) > new Date(sub.assignment.deadline)
+  const lateSubmissions = submissions.filter(
+    (sub) => new Date(sub.submittedAt) > new Date(sub.assignment.deadline)
   ).length;
 
   // Calculate on-time submissions
@@ -560,9 +564,10 @@ const getMySubmissionStats = async (studentId:any) => {
 
   // Calculate acceptance rate
   const reviewedSubmissions = accepted + rejected;
-  const acceptanceRate = reviewedSubmissions > 0 
-    ? Math.round((accepted / reviewedSubmissions) * 100) 
-    : 0;
+  const acceptanceRate =
+    reviewedSubmissions > 0
+      ? Math.round((accepted / reviewedSubmissions) * 100)
+      : 0;
 
   return {
     totalSubmissions,
@@ -572,45 +577,49 @@ const getMySubmissionStats = async (studentId:any) => {
     lateSubmissions,
     onTimeSubmissions,
     acceptanceRate,
-    averageResponseTime: reviewedSubmissions > 0 
-      ? Math.round(reviewedSubmissions / totalSubmissions * 100) 
-      : 0
+    averageResponseTime:
+      reviewedSubmissions > 0
+        ? Math.round((reviewedSubmissions / totalSubmissions) * 100)
+        : 0,
   };
 };
 
-
 //Give feedback to a submission (Accept/Reject with feedback)
-const giveSubmissionFeedback = async ( instructorId:string, submissionId:string, feedbackData:any) => {
+const giveSubmissionFeedback = async (
+  instructorId: string,
+  submissionId: string,
+  feedbackData: any
+) => {
   const { feedback } = feedbackData;
-  
-   // Validate submission belongs to instructor's assignment
-   const submission = await prisma.submission.findFirst({
+
+  // Validate submission belongs to instructor's assignment
+  const submission = await prisma.submission.findFirst({
     where: {
       id: submissionId,
       assignment: {
-        instructorId
-      }
+        instructorId,
+      },
     },
     include: {
       assignment: {
         select: {
           id: true,
           title: true,
-          instructorId: true
-        }
+          instructorId: true,
+        },
       },
       student: {
         select: {
           id: true,
           name: true,
-          email: true
-        }
-      }
-    }
+          email: true,
+        },
+      },
+    },
   });
 
   if (!submission) {
-    throw new Error('Submission not found or unauthorized');
+    throw new Error("Submission not found or unauthorized");
   }
 
   // Update submission with feedback
@@ -618,43 +627,46 @@ const giveSubmissionFeedback = async ( instructorId:string, submissionId:string,
     where: { id: submissionId },
     data: {
       feedback,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
     include: {
       assignment: {
         select: {
           id: true,
           title: true,
-          instructorId: true
-        }
+          instructorId: true,
+        },
       },
       student: {
         select: {
           id: true,
           name: true,
-          email: true
-        }
-      }
-    }
+          email: true,
+        },
+      },
+    },
   });
 
   // Create notification for student
   await prisma.notification.create({
     data: {
       userId: submission.student.id,
-      title: `Assignment ${status === 'ACCEPTED' ? 'Accepted' : 'Feedback Received'}`,
-      message: `Your submission for "${submission.assignment.title}" has been ${status.toLowerCase()}. ${feedback ? 'Check the feedback for details.' : ''}`,
-      type: status === 'ACCEPTED' ? 'ASSIGNMENT_GRADED' : 'ASSIGNMENT_FEEDBACK',
+      title: `Assignment ${
+        status === "ACCEPTED" ? "Accepted" : "Feedback Received"
+      }`,
+      message: `Your submission for "${
+        submission.assignment.title
+      }" has been ${status.toLowerCase()}. ${
+        feedback ? "Check the feedback for details." : ""
+      }`,
+      type: status === "ACCEPTED" ? "ASSIGNMENT_GRADED" : "ASSIGNMENT_FEEDBACK",
       assignmentId: submission.assignment.id,
-      submissionId: submissionId
-    }
+      submissionId: submissionId,
+    },
   });
 
   return updatedSubmission;
 };
-
-
-
 
 export const submissionService = {
   createSubmission,
@@ -663,4 +675,10 @@ export const submissionService = {
   updateSubmission,
   deleteSubmission,
   updateSubmissionStatus,
+  //!
+  getSubmissionChartDataForInstructor,
+  getStudentSubmissionChartData,
+  getStudentRecentSubmissions,
+  getMySubmissionStats,
+  giveSubmissionFeedback,
 };

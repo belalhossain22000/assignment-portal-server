@@ -13,6 +13,37 @@ router.post(
   submissionController.createSubmission
 );
 
+//getSubmissionChartDataForInstructor
+router.get(
+  "/instructor-chart-data",
+  auth(),
+  submissionController.getSubmissionChartDataForInstructor
+);
+
+//getStudentSubmissionChartData
+router.get(
+  "/student-submission-chart-data",
+  auth(),
+  submissionController.getStudentSubmissionChartData
+);
+
+//getStudentRecentSubmissions
+router.get(
+  "/student-recent-submissions",
+  auth(),
+  submissionController.getStudentRecentSubmissions
+);
+
+//getMySubmissionStats
+router.get("/my-submission-stats", auth(), submissionController.getMySubmissionStats);
+
+//giveSubmissionFeedback
+router.put(
+  "/feedback/:id",
+  auth(),
+  submissionController.giveSubmissionFeedback
+);
+
 // get all submission
 router.get("/", submissionController.getAllSubmissions);
 

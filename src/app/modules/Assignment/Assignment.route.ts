@@ -13,6 +13,41 @@ router.post(
   assignmentController.createAssignment
 );
 
+//getAssignmentStatsByInstructorId
+router.get(
+  "/assignment-stats/instructor/:id",
+  auth(),
+  assignmentController.getAssignmentStatsByInstructorId
+);
+
+//getRecentAssignmentsByInstructor
+router.get(
+  "/recent-assignments/instructor/:id",
+  auth(),
+  assignmentController.getRecentAssignmentsByInstructor
+);
+
+//getAllAssignmentsByInstructor
+router.get(
+  "/all-assignments/instructor/:id",
+  auth(),
+  assignmentController.getAllAssignmentsByInstructor
+);
+
+// getStudentAssignmentStats
+router.get(
+  "/student-assignment-stats/:id",
+  auth(),
+  assignmentController.getStudentAssignmentStats
+);
+
+//getAvailableAssignmentsForStudent
+router.get(
+  "/available-assignments-for-student",
+  auth(),
+  assignmentController.getAvailableAssignmentsForStudent
+);
+
 // get all assignment
 router.get("/", assignmentController.getAllAssignments);
 

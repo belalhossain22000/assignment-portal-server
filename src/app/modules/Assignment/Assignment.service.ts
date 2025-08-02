@@ -483,4 +483,9 @@ export const assignmentService = {
   getSingleAssignment,
   updateAssignment,
   deleteAssignment,
+  getAssignmentStatsByInstructorId,
+  getRecentAssignmentsByInstructor,
+  getAllAssignmentsByInstructor,
+  getStudentAssignmentStats,
+  getAvailableAssignmentsForStudent
 };

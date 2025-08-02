@@ -60,10 +60,91 @@ const deleteAssignment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+//getAssignmentStatsByInstructorId
+const getAssignmentStatsByInstructorId = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await assignmentService.getAssignmentStatsByInstructorId(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Assignment stats retrieved successfully",
+      data: result,
+    });
+  }
+)
+
+//getRecentAssignmentsByInstructor
+const getRecentAssignmentsByInstructor = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await assignmentService.getRecentAssignmentsByInstructor(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Recent assignments retrieved successfully",
+      data: result,
+    });
+  }
+)
+
+//getAllAssignmentsByInstructor
+const getAllAssignmentsByInstructor = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await assignmentService.getAllAssignmentsByInstructor(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "All assignments retrieved successfully",
+      data: result,
+    });
+  }
+)
+
+//getStudentAssignmentStats
+const getStudentAssignmentStats = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await assignmentService.getStudentAssignmentStats(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Assignment stats retrieved successfully",
+      data: result,
+    });
+  }
+)
+
+//getAvailableAssignmentsForStudent
+const getAvailableAssignmentsForStudent = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await assignmentService.getAvailableAssignmentsForStudent(
+      req.user.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Assignment stats retrieved successfully",
+      data: result,
+    });
+  }
+)
+
 export const assignmentController = {
   createAssignment,
   getAllAssignments,
   getSingleAssignment,
   updateAssignment,
   deleteAssignment,
+  getAssignmentStatsByInstructorId,
+  getRecentAssignmentsByInstructor,
+  getAllAssignmentsByInstructor,
+  getStudentAssignmentStats,
+  getAvailableAssignmentsForStudent
 };
