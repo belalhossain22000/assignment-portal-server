@@ -15,28 +15,28 @@ router.post(
 
 //getAssignmentStatsByInstructorId
 router.get(
-  "/assignment-stats/instructor/:id",
+  "/assignment-stats/instructor",
   auth(),
   assignmentController.getAssignmentStatsByInstructorId
 );
 
 //getRecentAssignmentsByInstructor
 router.get(
-  "/recent-assignments/instructor/:id",
+  "/recent-assignments/instructor/",
   auth(),
   assignmentController.getRecentAssignmentsByInstructor
 );
 
 //getAllAssignmentsByInstructor
 router.get(
-  "/all-assignments/instructor/:id",
+  "/all-assignments/instructor",
   auth(),
   assignmentController.getAllAssignmentsByInstructor
 );
 
 // getStudentAssignmentStats
 router.get(
-  "/student-assignment-stats/:id",
+  "/student-assignment-stats",
   auth(),
   assignmentController.getStudentAssignmentStats
 );

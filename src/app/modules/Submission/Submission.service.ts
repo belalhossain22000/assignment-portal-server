@@ -591,6 +591,7 @@ const giveSubmissionFeedback = async (
   feedbackData: any
 ) => {
   const { feedback } = feedbackData;
+  console.log(feedback);
 
   // Validate submission belongs to instructor's assignment
   const submission = await prisma.submission.findFirst({
@@ -619,7 +620,7 @@ const giveSubmissionFeedback = async (
   });
 
   if (!submission) {
-    throw new Error("Submission not found or unauthorized");
+    throw new ApiError(404, "Submission not found or unauthorized");
   }
 
   // Update submission with feedback

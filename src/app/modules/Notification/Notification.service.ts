@@ -62,10 +62,10 @@ const getNotificationsByUserId = async (
   ]);
 
   return {
-    notifications,
     totalCount,
     unreadCount,
     readCount: totalCount - unreadCount,
+    notifications,
   };
 };
 
